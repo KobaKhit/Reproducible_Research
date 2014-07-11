@@ -1,0 +1,97 @@
+---
+title: "Reproduciable Research Assignment 2"
+author: "Koba Khitalishvili"
+date: "June 21, 2014"
+output: html_document
+---
+
+
+## Data processing
+First, I start with downlading the data, unzipping it, and reading it in.
+```{r download, message=FALSE, cache=TRUE, warning=FALSE}
+if(!file.exists("data.csv")) {
+  #Download
+  url<-"https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+  download.file(url,"data.bz2",method="curl")
+  
+  # Unzip
+  zz <- readLines(gzfile("data.bz2"))
+  zz <- iconv(zz, "latin1", "ASCII", sub="")
+  writeLines(zz, "data.csv")
+  rm(zz)
+  }
+## Read data in
+  data<-read.csv("data.csv", sep=",", quote = "\"", header=TRUE)
+```
+
+The data set has `r nrow(data)` observations and `r ncol(data)` variables (columns). Below are the first six rows of the first 5 columns of the data set I am working with
+
+```{r summary, cache=TRUE}
+head(data[,1:5])
+```
+
+To answer the first question 
+
+* Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
+
+I summarize the number of total injuries and deaths by the event type over the period 1950 to 2011.
+
+```{r total number,cache=TRUE,eval=FALSE}
+Tdeaths<-sort(tapply(data$FATALITIES,list(data$EVTYPE),sum),decreasing=TRUE)
+Tinj<-sort(tapply(data$INJURIES,list(data$EVTYPE),sum),decreasing=TRUE)
+```
+
+Next, I calculate the average number of deaths and injuries for years 2000-2011. To do that, first, I need to extract the year information from the BGN_DATE column which is in format MM/DD/YYYY h:mm:ss.
+
+```{r years,eval=FALSE, cache=TRUE}
+head(data[,1:5])
+#Extract year
+Year<-format(as.Date(data$BGN_DATE,format="%m/%d/%Y"),"%Y")
+
+# Add a new year column to the dataset
+data<-data.frame(Year,data)
+
+head(data[,1:5])
+```
+
+Now, I can summarize the average number of fatalities and injuries by event for years 2000 to 2011. I chose the period 2000-2011 because in the earlier years of the database there are generally fewer events recorded, most likely due to a lack of good records. More recent years should be considered to have more complete records.
+
+```{r average number,eval=FALSE}
+years<-data$Year %in% 2000:2010
+
+TdeathsAve<-sort(tapply(data[years,]$FATALITIES,list(data[years,]$EVTYPE),sum),decreasing=TRUE)/11
+TinjAve<-sort(tapply(data[years,]$INJURIES,list(data[years,]$EVTYPE),sum),decreasing=TRUE)/11
+```
+
+To answer the second question
+
+* Across the United States, which types of events have the greatest economic consequences?
+
+I focus on the variables property damage(PROPDMG) and crop damage(CROPDMG). They have corresponding scaling columns PROPDMGEXP and CROPDMGEXP. The scaling columns contain information about how to scale the values in the columns PROPDMG and CROPDMG. For example, a value in the PROPDMG column that has a scaling factor "k" in the PROPDMGEXP column should be multiplied by $10^3$. I use the following scheme for the scaling factors 
+
+```{r scaling factors, eval=TRUE, echo=FALSE}
+df<-data.frame(table(data$PROPDMGEXP), Scale=0)
+for(i in 1:nrow(df)){
+   if(df[i,1] %in% 0:8) {df[i,3]<-paste("10^",as.character(df[i,1]),sep="")}
+   else if(df[i,1] %in% c("b","B")) {df[i,3]<-"10^9"}    # billion
+   else if(df[i,1] %in% c("m","M")) {df[i,3]<-"10^6"}    # million/mega
+   else if(df[i,1] %in% c("k","K")) {df[i,3]<-"10^3"}   # kilo   
+   else if(df[i,1] %in% c("h","H")) {df[i,3]<-"10^2"}   # hundred
+   else{df[i,3]<-"10^0"}
+}
+names(df)<-c("Scaling exponent","Occurences","Scaling factor")
+df
+```
+
+Some values in the PROPDMG and CROPDMG did not have scaling factors specified or had symbols like `+,-,?`. I decided not to scale the values that had those symbols. The rest is intuitive,namely, "b" and "B" stand for billion and etc.
+
+I calculate the total damage over the period 1950-2011 and average damage for years 2000 to 2011. The total damage is the sum of property damage and the crop damage
+
+```{r,eval=FALSE}
+Tpropdam
+
+```
+
+# Results
+
+barplot(sort(Tdeaths,decreasing=TRUE)[1:10],las=3)
