@@ -1,7 +1,7 @@
 ---
 title: "Reproducible Research Project 1"
 author: "Koba Khitalishvili"
-date: "May 23, 2014"
+date: "May 23rd, 2014"
 output: html_document
 ---
 
