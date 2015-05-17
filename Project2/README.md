@@ -1,4 +1,4 @@
-
+This project was done fora coursera class [Reproducible Research](https://class.coursera.org/repdata-014). The goal is to create a verbose [Rpubs file](http://rpubs.com/Koba/80238) with analysis. I also made a [blog post](http://www.kobakhit.com/blog1/r/data-science/rickshaw/2015/05/17/project2.html) on my website about this project.
 
 ## Introduction
 
