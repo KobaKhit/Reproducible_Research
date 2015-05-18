@@ -2,7 +2,7 @@
 title: "Reproducible Research Project 1"
 author: "Koba Khitalishvili"
 date: "May 12, 2015"
-output: html_document
+output:  html_document
 ---
 
 This is an R Markdown document done for an [assignment](https://github.com/KobaKhit/RepData_PeerAssessment1/blob/master/README.md) from the Reproducible Research Coursera class offered by John Hopkins University.
@@ -19,6 +19,7 @@ data<-read.csv("activity.csv",sep=",",quote="\"'",header=TRUE)
 
 ### Analysis
 Below are the first six rows and the summary of the data set I am working with.
+
 ```{r analysis,echo=TRUE}
 head(data)
 summary(data)
@@ -26,14 +27,19 @@ summary(data)
 
 #### What is mean total number of steps taken per day?
 I start with calculating the total steps per day.
+
 ```{r}
 stepsPerDay<-tapply(na.omit(data)$steps,list(na.omit(data)$date),sum)
 ```
+
 Below is the histogram of total steps per day. It looks like the mean and the median are a little above 10 000.
+
 ```{r histogram}
 hist(stepsPerDay,breaks=20)
 ```
+
 To calculate the mean and median of total steps per day I have to ignore the NA values.
+
 ```{r mean of steps per day, results='hold'}
 mean(stepsPerDay,na.rm=TRUE)
 median(stepsPerDay,na.rm=TRUE)
@@ -41,23 +47,30 @@ median(stepsPerDay,na.rm=TRUE)
 
 #### What is the average daily activity pattern?
 To answer the question I average steps taken per interval over all days and then plot the resulting data.
+
 ```{r calculate and plot average steps per interval, fig.width=10}
 stepsPerInt<-tapply(na.omit(data)$steps,list(na.omit(data)$interval),mean)
 plot(names(stepsPerInt),stepsPerInt,type="l",xlab="Interval",ylab="Steps per interval")
 ```
+
 Let's see which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps.
+
 ```{r max average number of steps per interval}
 names(stepsPerInt[stepsPerInt==max(stepsPerInt)])
 ```
+
 Thus, on average the maximum number of steps is taken during the 8:30-8:35 am 5-minute interval.
 
 #### Imputing missing values
 There are a total of 2304 missing values which we can see from the data set summary above. Just to make sure  I calculate how many missing values there are again.
+
 ```{r missing values}
 #Calculate missing values
 sum((!complete.cases(data)))
 ```
+
 I am going to fill the missing values with the average steps taken per interval for which the value is missing.
+
 ```{r filling missing values, results='hold'}
 filledData<-data #new data set where I will remove missing values
 intervals<-as.numeric(levels(factor(filledData$interval))) #vector of intervals
@@ -68,21 +81,27 @@ for(i in intervals){
 summary(filledData)
 nrow(filledData)
 ```
+
 The resulting data frame `filledData` contains no missing values and has the same number of rows as the original data set.  
 Now, I am going to examine whether filling the missing values has any impact on the summary statistics. Below is the histogram of total steps taken per day using `fiiledData` data set.
+
 ```{r histogram of steps per day using filled values}
 stepsPerDayNew<-tapply(filledData$steps,list(filledData$date),sum)
 hist(stepsPerDayNew,breaks=20)
 ```
+
 Looks like the shape of the distribution did not change at all, but the frequency of total steps per day increased equally for all days. Let's calculate the mean and the median of steps per day with filled data.
+
 ```{r mean of steps per day using filled data, results='hold'}
 mean(stepsPerDayNew,na.rm=TRUE)
 median(stepsPerDayNew,na.rm=TRUE)
 ```
+
 Mean remained the same while the median increased by a negligible 1 step per day. Therefore, filling the missing values with the average of steps per interval did not had any effect on the summary statistics.
 
 #### Are there differences in activity patterns between weekdays and weekends?
 To identify observations that were taken during the weekends I create a new factor column with levels weekend and weekday. 
+
 ```{r weekdays}
 filledData<-data.frame(filledData,weekend=0)
 weekends<-weekdays(as.Date(filledData$date)) %in% c("Sunday","Saturday")
@@ -90,7 +109,9 @@ filledData[weekends,]$weekend<-1
 filledData$weekend<-factor(filledData$weekend,labels=c("weekday","weekend"))
 summary(filledData)
 ```
+
 To see differences in activity patterns I make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
+
 ```{r panel plot weekend/weekday activity, message=FALSE}
 require(reshape)
 require(lattice)
@@ -104,7 +125,9 @@ xyplot(value~interval|factor(weekday),
        main="Average number of steps taken per interval\nduring weekdays and weekends",
        ylab="average number of steps")
 ```
+
 Apparently, people take fewer steps in the morning during the weekends, but more steps in the afternoon and in the evening.
+
 ```{r,include=FALSE,message=FALSE}
 file.remove("data.zip","activity.csv")
 rm(stepsPerDay,stepsPerDayNew,stepsPerInt,url,weekends,i,intervals,filledData,stepsPerIntWeek,theory)
