@@ -1,6 +1,6 @@
 ---
 title: "Reproducible Research Project 1"
-author: "Koba Khitalishvili"
+author: "[Koba Khitalishvili](http://www.kobakhit.com/about.html)"
 date: "May 12, 2015"
 output:  html_document
 ---
